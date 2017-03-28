@@ -15,12 +15,24 @@ provider "aws" {
 }
 
 resource "aws_db_instance" "web_db" {
-  provider          = "aws.tokyo"
-  engine            = "mysql"
-  allocated_storage = 10
-  engine_version    = "5.6.17"
-  instance_class    = "db.t2.micro"
-  name              = "mydb"
-  username          = "admin"
-  password          = "${var.db_password}"
+  provider             = "aws.tokyo"
+  availability_zone    = "ap-northeast-1a"
+  engine               = "mysql"
+  allocated_storage    = 10
+  instance_class       = "db.t2.micro"
+  identifier           = "mydb"
+  name                 = "helloworld"
+  username             = "admin"
+  password             = "${var.db_password}"
+  db_subnet_group_name = "${aws_db_subnet_group.web_db.name}"
+}
+
+resource "aws_db_subnet_group" "web_db" {
+  provider   = "aws.tokyo"
+  name       = "helloworld-db-subnet"
+  subnet_ids = ["subnet-ec5d1f9a", "subnet-bf1997e7"]
+
+  tags {
+    Name = "My DB subnet group"
+  }
 }
