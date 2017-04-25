@@ -32,10 +32,10 @@ resource "aws_subnet" "public" {
   depends_on = ["aws_internet_gateway.gw"]
 }
 
-resource "aws_security_group" "nat" {
-  name        = "api_vpc_sg"
+resource "aws_security_group" "api_sg" {
+  name        = "api_sg"
   vpc_id      = "${aws_vpc.main.id}"
-  description = "Allow traffic to pass from the private subnet to the internet"
+  description = "Accept SSH to backend Instance from anyone"
 
   ingress {
     from_port   = 22
@@ -45,6 +45,9 @@ resource "aws_security_group" "nat" {
   }
 
   depends_on = ["aws_subnet.public"]
+  tags {
+    Name = "terraform-api-sg"
+  }
 }
 
 resource "aws_route_table" "public" {
@@ -57,6 +60,19 @@ resource "aws_route_table" "public" {
 
   tags {
     Name = "terraform-api-public-rt"
+  }
+}
+
+resource "aws_instance" "backend" {
+  ami = "ami-5de0433c"
+  instance_type = "t2.micro"
+  key_name = "devops"
+  subnet_id = "${aws_subnet.public.id}"
+  vpc_security_group_ids = ["${aws_security_group.api_sg.id}"]
+  associate_public_ip_address = true
+  
+  tags {
+    Name = "terraform-api-instance"
   }
 }
 
